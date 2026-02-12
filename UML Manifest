@@ -1,0 +1,44 @@
+@startuml
+actor User
+participant "Python Script" as Script
+participant "Flickr API" as API
+database "Local Storage" as Disk
+
+User -> Script : Run script
+Script -> API : Check Token Validity
+alt Token Invalid
+    Script -> API : Get Request Token
+    API -> Script : Return Auth URL
+    Script -> User : Prompt: Open URL & Enter Code
+    User -> Script : Provide Verifier Code
+    Script -> API : Get Access Token
+end
+
+Script -> API : flickr.test.login()
+API -> Script : Return User NSID
+Script -> Disk : Create 'downloads' folder
+
+loop until all pages processed
+    Script -> API : flickr.photos.search (page N)
+    API -> Script : List of 500 photos (URLs + IDs)
+    
+    loop for each photo in list
+        alt Image not on Disk
+            Script -> API : Request Original Image URL
+            API -> Disk : Download Image (.jpg/.png)
+        end
+        
+        alt JSON not on Disk
+            Script -> API : flickr.photos.getInfo(id)
+            API -> Script : Return metadata (dates, tags, etc.)
+            Script -> API : flickr.photos.comments.getList(id)
+            API -> Script : Return user comments
+            Script -> Disk : Save combined JSON
+        end
+    end
+    
+    Script -> Script : Increment Page
+end
+
+Script -> User : Print "Backup complete!"
+@endum
