@@ -1,4 +1,4 @@
-# Flickr high-fidelity backup
+# Flickr exporter
 
 A quick Python hack designed to archive a complete Flickr photostream at maximum quality while preserving all associated metadata.
 
